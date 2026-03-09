@@ -5,6 +5,11 @@
   const multEl = document.getElementById("multiplier");
   const playersEl = document.getElementById("playersOnline");
 
+  const isEn = document.documentElement.lang?.toLowerCase().startsWith("en");
+  const locale = isEn ? "en-US" : "ru-RU";
+  const copiedMsg = isEn ? "Promo code copied" : "Промокод скопирован";
+  const failedMsg = isEn ? "Failed to copy promo code" : "Не удалось скопировать промокод";
+
   let toastTimer = null;
 
   function showToast(text) {
@@ -21,9 +26,8 @@
         await navigator.clipboard.writeText(text);
         return true;
       }
-    } catch (_) {
-      // ignore
-    }
+    } catch (_) {}
+
     try {
       const ta = document.createElement("textarea");
       ta.value = text;
@@ -43,25 +47,23 @@
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
       const ok = await copyText(promo);
-      showToast(ok ? "Промокод скопирован" : "Не удалось скопировать промокод");
+      showToast(ok ? copiedMsg : failedMsg);
     });
   }
 
-  // "Игроков онлайн" — лёгкая псевдо-реалистичная анимация без запросов.
   function initPlayers() {
     if (!playersEl) return;
     const base = 1800 + Math.floor(Math.random() * 700);
     let current = base;
-    playersEl.textContent = current.toLocaleString("ru-RU");
+    playersEl.textContent = current.toLocaleString(locale);
 
     window.setInterval(() => {
       const step = Math.floor((Math.random() - 0.48) * 42);
       current = Math.max(900, Math.min(9999, current + step));
-      playersEl.textContent = current.toLocaleString("ru-RU");
+      playersEl.textContent = current.toLocaleString(locale);
     }, 1800);
   }
 
-  // Анимация коэффициента (crash-like): растёт, затем "крашится" и начинается заново.
   function initMultiplier() {
     if (!multEl) return;
     const prefersReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
@@ -71,9 +73,13 @@
     let crashAt = 1.7 + Math.random() * 6.8;
 
     function frame(t) {
+      if (document.hidden) {
+        requestAnimationFrame(frame);
+        return;
+      }
       const seconds = (t - start) / 1000;
-      // Экспоненциальный рост, но мягкий (визуально "как в crash").
       const x = 1 + (Math.exp(seconds / 2.45) - 1) * 0.42;
+
       if (x >= crashAt) {
         multEl.textContent = `${crashAt.toFixed(2)}x`;
         multEl.style.color = "#ff2bd6";
@@ -87,6 +93,7 @@
         }, 650);
         return;
       }
+
       multEl.textContent = `${x.toFixed(2)}x`;
       requestAnimationFrame(frame);
     }
