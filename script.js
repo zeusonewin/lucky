@@ -82,8 +82,8 @@
 
       if (x >= crashAt) {
         multEl.textContent = `${crashAt.toFixed(2)}x`;
-        multEl.style.color = "#ff2bd6";
-        multEl.style.textShadow = "0 0 18px rgba(255,43,214,.35), 0 0 26px rgba(34,211,238,.18)";
+        multEl.style.color = "#ec4899";
+        multEl.style.textShadow = "0 0 20px rgba(236,72,153,.4), 0 0 28px rgba(6,182,212,.25)";
         window.setTimeout(() => {
           multEl.style.color = "";
           multEl.style.textShadow = "";
@@ -101,6 +101,21 @@
     requestAnimationFrame(frame);
   }
 
+  function initReveal() {
+    const sections = document.querySelectorAll(".section.reveal");
+    if (!sections.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("visible");
+        });
+      },
+      { rootMargin: "0px 0px -60px 0px", threshold: 0.05 }
+    );
+    sections.forEach((el) => io.observe(el));
+  }
+
   initPlayers();
   initMultiplier();
+  initReveal();
 })();
